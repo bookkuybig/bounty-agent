@@ -23,8 +23,6 @@ request goes through `gh`, so the credential stays in your OS keyring.
 Copy `config.example.toml` to `config.toml` and edit it. `config.toml` is
 git-ignored because it holds your ntfy topic.
 
-Built with Claude Code.
-
 ## Use
 
 ```bash

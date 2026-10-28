@@ -1,0 +1,7 @@
+# Local state and private settings (config.toml holds the private ntfy topic)
+config.toml
+config.toml.bak
+*.db
+*.log
+*_seen.json
+__pycache__/

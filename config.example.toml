@@ -1,0 +1,190 @@
+# bounty-agent configuration
+# Tune these without touching code.
+
+[search]
+# One GitHub search is issued per label. Labels are matched case-insensitively.
+labels = [
+  "💎 Bounty",
+  "bounty",
+  "💰 Reward",
+  "cash-bounty",
+]
+# "paid" was dropped: Baserow uses it for premium features, others for
+# bounties already paid out. It surfaced no real open bounty.
+# Also search issues these accounts have commented on. Algora's bot posts the
+# bounty as a comment and many funded repos never apply a label.
+commenters = [
+  "algora-pbc",          # Algora: Stripe Connect payouts
+  "opirebot[bot]",       # Opire: tracks only, payment arranged person to person
+  "bountyhub-app[bot]",  # BountyHub: Stripe Express, PayPal fallback, 0% solver fee
+]
+# boss-bounty[bot] is left out on purpose: boss.dev pays residents of 23
+# countries only, and Thailand is not one of them.
+# Extra raw GitHub search queries, run as-is.
+# Expensify: every "Help Wanted" issue is a paid Upwork job (amount in the title).
+queries = [
+  'repo:Expensify/App is:issue is:open label:"Help Wanted"',
+]
+# Skip issues created before this many days ago (0 = no limit).
+max_age_days = 1095
+# Hard cap on issues pulled per label per cycle.
+per_label_limit = 100
+
+[filter]
+# Drop issues already assigned to someone else.
+drop_assigned = true
+# Drop issues with at least this many linked pull requests.
+# Fresh popular bounties attract dozens of agent PRs; those are unwinnable.
+max_competitors = 12
+# Drop issues whose parsed bounty is below this (USD). Unknown amounts are kept.
+min_amount = 0
+# Bounty farms: tiny repos posting hundreds of templated "bounties", or forks
+# of a real project re-listing its issues. Paying out is rare. A fork count far
+# above the star count means people clone to farm, not because they use it.
+drop_forks = true
+min_repo_stars = 10
+max_fork_star_ratio = 6.0
+# Repos above this star count draw heavy competition; scored down, not dropped.
+crowded_repo_stars = 20000
+# Issue farms: thousands of templated issues all carrying the same amount.
+# They are not real bounties and they drown out everything else.
+blocked_repos = [
+  "SecureBananaLabs/bug-bounty",
+  "Scottcjn/Rustchain",  # pays in its own token, not cash
+  "Ikalus1988/MisakaNet",  # self-labelled "[Bounty][$0]" tasks, hundreds of comments
+  "auscaster/frantic-board",  # $1-2 product-trial micro tasks
+  "riteshbonthalakoti/HELPDESK.AI",  # no cash amount, forks > stars, 4000+ issues
+  # .github/LLM_USAGE_POLICY.md: an LLM "MUST NOT author any part of a submission".
+  "fluxerapp/fluxer",
+  "fluxerapp/fluxer-meta",
+]
+# Comment-heavy issues are crowded even when nobody has linked a PR yet:
+# claimants pile in with "/attempt" and answers posted as comments.
+max_comments = 150
+# Issues already screened and rejected: never alert on them again. Add "owner/repo#number".
+blocked_issues = [
+  "tenstorrent/tt-metal#59732",     # assigned in body text, needs Tenstorrent hardware
+  "Expensify/App#102437",           # MelvinBot draft PR, 12+ proposals, native flow
+  "Expensify/App#101616",           # proposal accepted (wildan-m)
+  "Expensify/App#98364",            # staging-only, backend, Engineering label
+  "Expensify/App#75905",            # needs iPhone Safari repro, crowded
+  "Expensify/App#96419",            # 20 proposals
+  "Expensify/App#91935",            # 20 proposals + merged PR
+  "Expensify/App#102742",           # closed-source Android OldDot code, crowded
+  "Expensify/App#99090",            # proposal accepted
+  "Expensify/App#98674",            # ruled intentional, not a bug
+  "Expensify/App#97049",            # backend-only
+  "Expensify/App#93198",            # contributor PR in review
+  "PG-AGI/toingg-jarvis#11",        # $5 for a large feature
+  "PG-AGI/toingg-jarvis#13",        # $5 for cross-platform installers
+  "romankurnovskii/etemaro#342",    # $10 for a full web GUI rewrite
+  "secondlife/viewer#4390",         # build-system rewrite RFP, no amount
+  "baserow/baserow#6130",           # "paid" = premium feature, not a bounty
+  "microg/GmsCore#2843",            # multi-week WearOS work, 185 comments
+  "microg/GmsCore#2994",            # RCS support, 700+ comments
+  "microg/GmsCore#580",             # Google Cast implementation, multi-week
+  "azerothcore/azerothcore-wotlk#22571",  # map partitioning, multi-week C++
+  "probe-rs/probe-rs#4355",         # Opire bot present but no reward funded
+  "Feel-ix-343/markdown-oxide#274", # $5, already claimed
+  "Feel-ix-343/markdown-oxide#269", # $5, already claimed
+  "Feel-ix-343/markdown-oxide#263", # $5, already claimed
+  "flowese/UdioWrapper#7",          # asks for automated CAPTCHA solving - will not do
+  "trovu/trovu#329",                # linked PR already merged, 97 comments
+  "hexgrad/kokoro#290",             # funding drive for German TTS, not a code fix
+  "Expensify/App#99850",            # on HOLD, iOS native crash (needs Mac)
+  "Expensify/App#70080",            # C+ approved franklincg's proposal on 2026-10-02
+  "Expensify/App#103531",           # iOS-native only (needs Mac); 4 proposals within 1 min of Help Wanted
+  "Expensify/App#103650",           # 4 full proposals (same obvious fix) within 19 min; a 5th would be a duplicate
+  "Expensify/App#101675",           # contributor oqildev already assigned; 2 proposals within 4 min
+  "NSPG13/agent-bounties#1632",     # not code: recruit a project you already maintain to fund a bounty; already exclusively claimed
+  "Expensify/App#100120",           # 5 proposers (3 posted the same second as Help Wanted); needs 4 test accounts
+  "sybil-solutions/local-ai-registry#221",  # needs a GPU we do not own (we have RTX 5060 Ti 16GB only)
+  "sybil-solutions/local-ai-registry#223",  # needs a Ryzen AI 890M iGPU (we have Intel Core Ultra 7 + RTX 5060 Ti)
+  "Expensify/App#104027",           # 17 proposers within 5 h
+  "ditto-assistant/ditto-subnet#2871",  # assigned to double-k-3033; Bittensor miner hotkey needed
+  "ditto-assistant/ditto-subnet#2872",  # assigned to double-k-3033; Bittensor miner hotkey needed
+  "ditto-assistant/ditto-subnet#2942",  # Bittensor subnet, payout needs miner hotkey
+  "ditto-assistant/ditto-subnet#2943",  # Bittensor subnet, payout needs miner hotkey
+  "ditto-assistant/ditto-subnet#2944",  # Bittensor subnet, payout needs miner hotkey
+  "uvsmtid/protoprimer#143",  # 12+ competing PRs
+  "Expensify/App#102562",  # 5 proposals
+  "Expensify/App#103403",  # 9+ proposals
+  "Expensify/App#100290",  # 4 proposals, C+ cannot reproduce
+  "Expensify/App#104400",  # 5 proposals
+  "vlad441/ncpp#1",  # no amount, empty body, 11-star repo
+  "Expensify/App#104505",  # 4 proposals in 1 min, native HybridApp Android crash
+  "XHToken/Spark-X2.6#16",  # hackathon, 1 winner x $100, past rounds 30-85 entrants
+  "Expensify/App#104060",  # 9 proposals
+  "Expensify/App#104461",  # 7 proposals
+  "Expensify/App#101234",  # 6 proposals within 1 min of Help Wanted
+  "Expensify/App#103620",           # 11 proposers
+  "sybil-solutions/local-ai-registry#220",  # needs a GPU we do not own (we have RTX 5060 Ti 16GB only)
+  "sybil-solutions/local-ai-registry#219",  # needs a GPU we do not own (we have RTX 5060 Ti 16GB only)
+  "sybil-solutions/local-ai-registry#218",  # needs a GPU we do not own (we have RTX 5060 Ti 16GB only)
+  "sybil-solutions/local-ai-registry#217",  # needs a GPU we do not own (we have RTX 5060 Ti 16GB only)
+  "sybil-solutions/local-ai-registry#216",  # needs a GPU we do not own (we have RTX 5060 Ti 16GB only)
+]
+# Repos where an internal staffer is always assigned and bots comment a lot,
+# so the assignee and comment-count filters say nothing about competition.
+# Linked PRs still count: one means a contributor was already hired.
+exempt_repos = ["Expensify/App"]
+# Repos where people compete with written proposals in the comments before any
+# PR exists. Each distinct proposal author counts as a rival, and these repos
+# skip max_per_repo so every open job gets measured.
+proposal_repos = ["Expensify/App"]
+# Labels that mean someone already has the job (matched case-insensitively).
+# Expensify: "Reviewing" = a PR is under review, "Awaiting Payment" = done.
+drop_labels = ["Reviewing", "Awaiting Payment"]
+# A single repo may contribute at most this many rows to the report, and gets
+# at most this many timeline lookups per cycle. Keeps one noisy repo from
+# eating the whole API budget.
+max_per_repo = 3
+
+[scoring]
+# Issues untouched for this long suggest earlier attempts failed — opportunity.
+stale_bonus_days = 45
+stale_bonus = 1.4
+# Multiplier applied when someone else is assigned.
+assigned_penalty = 0.05
+# Multiplier when the bounty amount could not be parsed.
+unknown_amount_penalty = 0.6
+# Fallback USD value used for ranking when no amount is parsed.
+assumed_amount = 120
+
+[effort]
+# Crude hour estimates, used as the denominator of the score.
+# No LLM involved at this stage — that is the point.
+default_hours = 4.0
+long_body_chars = 3000
+long_body_hours = 8.0
+label_hours = { "good first issue" = 1.5, "documentation" = 1.5, "docs" = 1.5, "typo" = 1.0, "bug" = 3.0, "enhancement" = 6.0, "feature" = 6.0, "performance" = 6.0, "compiler" = 10.0 }
+
+[stack]
+# Languages you actually want. Matched against the repo's primary language.
+# Repos outside this list are scored down, not dropped. Empty list = no preference.
+preferred = ["Python"]
+# Multiplier for repos whose language is not in `preferred`.
+off_stack_penalty = 0.5
+
+[api]
+# Timeline lookups cost one request each. Only the top N candidates per cycle
+# get one, and results are cached until the issue's updated_at changes.
+timeline_budget = 250
+
+[notify]
+# Windows toast when an issue passes the filters for the first time.
+# Every alert is also appended to alerts.log.
+toast = true
+# Phone push via ntfy.sh: install the ntfy app and subscribe to this topic.
+# Anyone who knows the name can read the alerts, so keep it random.
+# Empty string disables it.
+ntfy_topic = ""
+
+[sources]
+# Polled every cycle in addition to GitHub search. Pays in USDC, ETH, BTC or
+# USD bank transfer; crypto is fine for us. Empty string disables it.
+taskbounty_url = "https://www.task-bounty.com/api/v1/tasks"
+# ML / data science competitions (Kaggle, Codabench, Zindi, CrunchDAO...).
+# The page embeds all listings as JSON; only open ones at or above the prize floor alert.
+mlcontests_url = "https://mlcontests.com/"
+mlcontests_min_prize = 1000
